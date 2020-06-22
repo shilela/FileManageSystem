@@ -1,9 +1,9 @@
 #include "init.h"
 
-extern unsigned char* myvhard;
-extern useropen openfilelist[MAXOPENFILE];
-extern int currfd;
-extern unsigned char* startp;
+unsigned char* myvhard;
+useropen openfilelist[MAXOPENFILE];
+int currfd;
+unsigned char* startp;
 
 const char* FILENAME = "SFS";
 const char* BOOT_INFORMATION = "BLOCKSIZE:1024\n"\
@@ -13,9 +13,9 @@ const char* BOOT_INFORMATION = "BLOCKSIZE:1024\n"\
 void startsys()
 {
     /**
-     * Èç¹û´æÔÚÎÄ¼şÏµÍ³Ôò
-     * ½« root Ä¿Â¼ÔØÈë´ò¿ªÎÄ¼ş±í¡£
-     * ·ñÔò£¬µ÷ÓÃ my_format ´´½¨ÎÄ¼şÏµÍ³£¬ÔÙÔØÈë¡£
+     * å¦‚æœå­˜åœ¨æ–‡ä»¶ç³»ç»Ÿåˆ™
+     * å°† root ç›®å½•è½½å…¥æ‰“å¼€æ–‡ä»¶è¡¨ã€‚
+     * å¦åˆ™ï¼Œè°ƒç”¨ my_format åˆ›å»ºæ–‡ä»¶ç³»ç»Ÿï¼Œå†è½½å…¥ã€‚
      */
     myvhard = (unsigned char*)malloc(SIZE);
 	
@@ -29,7 +29,7 @@ void startsys()
         my_format();
     }
 
-	// °ÑÓÃ»§´ò¿ªÎÄ¼ş±íµÄ0ºÅÉèÎªroot
+	// æŠŠç”¨æˆ·æ‰“å¼€æ–‡ä»¶è¡¨çš„0å·è®¾ä¸ºroot
     fcb* root;
     root = (fcb*)(myvhard + 5 * BLOCKSIZE);
     strcpy(openfilelist[0].filename, root->filename);
@@ -56,7 +56,7 @@ void startsys()
 void exitsys()
 {
     /**
-	 * ÒÀ´Î¹Ø±Õ ´ò¿ªÎÄ¼ş¡£ Ğ´Èë FILENAME ÎÄ¼ş
+	 * ä¾æ¬¡å…³é—­ æ‰“å¼€æ–‡ä»¶ã€‚ å†™å…¥ FILENAME æ–‡ä»¶
 	 */
     while (currfd) {
         my_close(currfd);
@@ -69,10 +69,10 @@ void exitsys()
 }
 
 /**
- * ³õÊ¼»¯Ç°Îå¸ö´ÅÅÌ¿é
- * Éè¶¨µÚÁù¸ö´ÅÅÌ¿éÎª¸ùÄ¿Â¼´ÅÅÌ¿é
- * ³õÊ¼»¯ root Ä¿Â¼£º ´´½¨ . ºÍ .. Ä¿Â¼
- * Ğ´Èë FILENAME ÎÄ¼ş £¨Ğ´Èë´ÅÅÌ¿Õ¼ä£©
+ * åˆå§‹åŒ–å‰äº”ä¸ªç£ç›˜å—
+ * è®¾å®šç¬¬å…­ä¸ªç£ç›˜å—ä¸ºæ ¹ç›®å½•ç£ç›˜å—
+ * åˆå§‹åŒ– root ç›®å½•ï¼š åˆ›å»º . å’Œ .. ç›®å½•
+ * å†™å…¥ FILENAME æ–‡ä»¶ ï¼ˆå†™å…¥ç£ç›˜ç©ºé—´ï¼‰
  */
 void my_format()
 {
@@ -94,11 +94,11 @@ void my_format()
         fat2[i].id = FREE;
     }
 
-    // 5ºÅÊÇ¸ùÄ¿Â¼
+    // 5å·æ˜¯æ ¹ç›®å½•
     fcb* root = (fcb*)(myvhard + BLOCKSIZE * 5); 
     strcpy(root->filename, ".");
     strcpy(root->exname, "");
-    root->attribute = 0; // Ä¿Â¼ÎÄ¼ş
+    root->attribute = 0; // ç›®å½•æ–‡ä»¶
     set_create_time(&root->date, &root->time);
     root->first = 5;
     root->free = 1;
@@ -110,7 +110,7 @@ void my_format()
     for (int i = 2; i < (int)(BLOCKSIZE / sizeof(fcb)); i++) {
         root2++;
         strcpy(root2->filename, "");
-        root2->free = 0; // ¿éÄÚÆäÓà¿Õ¼ä°ÑfcbÖĞfreeÖµÖÃÎª0£¬·ÀÖ¹ÒòÎªmallocº¯ÊıÉêÇëµÄÄÚ´æ¿Õ¼äÄÚ²¿ÓĞ1
+        root2->free = 0; // å—å†…å…¶ä½™ç©ºé—´æŠŠfcbä¸­freeå€¼ç½®ä¸º0ï¼Œé˜²æ­¢å› ä¸ºmallocå‡½æ•°ç”³è¯·çš„å†…å­˜ç©ºé—´å†…éƒ¨æœ‰1
     }
 
     FILE* fp = fopen(FILENAME, "w");
@@ -120,7 +120,7 @@ void my_format()
 
 void my_ls()
 {
-    // ÅĞ¶ÏÊÇ·ñÊÇÄ¿Â¼
+    // åˆ¤æ–­æ˜¯å¦æ˜¯ç›®å½•
     if (openfilelist[currfd].attribute == 1) {
         printf("data file\n");
         return;
@@ -131,11 +131,11 @@ void my_ls()
     char* buf = (char*)malloc(BLOCKSIZE);
     int i;
 
-    // ¶ÁÈ¡µ±Ç°Ä¿Â¼ÎÄ¼şĞÅÏ¢(Ò»¸ö¸öfcb), ÔØÈëÄÚ´æ
-    openfilelist[currfd].count = 0; // ¶ÁĞ´Ö¸Õë´ÓÍ·¿ªÊ¼¶Á
+    // è¯»å–å½“å‰ç›®å½•æ–‡ä»¶ä¿¡æ¯(ä¸€ä¸ªä¸ªfcb), è½½å…¥å†…å­˜
+    openfilelist[currfd].count = 0; // è¯»å†™æŒ‡é’ˆä»å¤´å¼€å§‹è¯»
     do_read(currfd, openfilelist[currfd].length, buf);
 
-    // ±éÀúµ±Ç°Ä¿Â¼ fcb
+    // éå†å½“å‰ç›®å½• fcb
 	printf("<TYPE> \tDATE\t\tTIME\t\tLENGTH\tNAME\t\n");
 	printf("------------------------------------------------------------\n");
     fcb* fcbptr = (fcb*)buf;
@@ -172,9 +172,9 @@ void my_ls()
 void my_mkdir(char* dirname)
 {
     /**
-	 * µ±Ç°Ä¿Â¼£ºµ±Ç°´ò¿ªÄ¿Â¼Ïî±íÊ¾µÄÄ¿Â¼
-	 * ¸ÃÄ¿Â¼£ºÒÔÏÂÖ¸´´½¨µÄÄ¿Â¼
-	 * ¸¸Ä¿Â¼£ºÖ¸¸ÃÄ¿Â¼µÄ¸¸Ä¿Â¼ ¶Á½øbuf»º³åÇø±£´æ
+	 * å½“å‰ç›®å½•ï¼šå½“å‰æ‰“å¼€ç›®å½•é¡¹è¡¨ç¤ºçš„ç›®å½•
+	 * è¯¥ç›®å½•ï¼šä»¥ä¸‹æŒ‡åˆ›å»ºçš„ç›®å½•
+	 * çˆ¶ç›®å½•ï¼šæŒ‡è¯¥ç›®å½•çš„çˆ¶ç›®å½• è¯»è¿›bufç¼“å†²åŒºä¿å­˜
 	 */
     int i = 0;
     char* text = (char*)malloc(BLOCKSIZE);
@@ -185,12 +185,12 @@ void my_mkdir(char* dirname)
         printf("you can not use extension\n");
         return;
     }
-    // ¶ÁÈ¡¸¸Ä¿Â¼ĞÅÏ¢
+    // è¯»å–çˆ¶ç›®å½•ä¿¡æ¯
     openfilelist[currfd].count = 0;
     int filelen = do_read(currfd, openfilelist[currfd].length, text);
     fcb* fcbptr = (fcb*)text;
 
-    // ²éÕÒÊÇ·ñÖØÃû
+    // æŸ¥æ‰¾æ˜¯å¦é‡å
     for (i = 0; i < (int)(filelen / sizeof(fcb)); i++) {
         if (strncmp(dirname, fcbptr[i].filename, 8) == 0 && fcbptr->attribute == 0) {
             printf("dir has existed\n");
@@ -198,47 +198,47 @@ void my_mkdir(char* dirname)
         }
     }
 
-    // ÉêÇëÒ»¸ö´ò¿ªÄ¿Â¼±íÏî
+    // ç”³è¯·ä¸€ä¸ªæ‰“å¼€ç›®å½•è¡¨é¡¹
     int fd = get_free_openfilelist();
     if (fd == -1) {
         printf("openfilelist is full\n");
         return;
     }
-    // ÉêÇëÒ»¸ö´ÅÅÌ¿é
+    // ç”³è¯·ä¸€ä¸ªç£ç›˜å—
     unsigned short int block_num = get_free_block();
     if (block_num == END) {
         printf("blocks are full\n");
         openfilelist[fd].topenfile = 0;
         return;
     }
-    // ¸üĞÂ fat ±í
+    // æ›´æ–° fat è¡¨
     fat* fat1 = (fat*)(myvhard + BLOCKSIZE);
     fat* fat2 = (fat*)(myvhard + BLOCKSIZE * 3);
     fat1[block_num].id = END;
     fat2[block_num].id = END;
 
-    // ÔÚ¸¸Ä¿Â¼ÖĞÕÒÒ»¸ö¿ÕµÄ fcb£¬·ÖÅä¸ø¸ÃÄ¿Â¼
+    // åœ¨çˆ¶ç›®å½•ä¸­æ‰¾ä¸€ä¸ªç©ºçš„ fcbï¼Œåˆ†é…ç»™è¯¥ç›®å½•
     for (i = 0; i < (int)(filelen / sizeof(fcb)); i++) {
         if (fcbptr[i].free == 0) {
             break;
         }
     }
     openfilelist[currfd].count = i * sizeof(fcb);
-    openfilelist[currfd].fcbstate = 1; // ¸¸fcb±»ĞŞ¸ÄÁË
+    openfilelist[currfd].fcbstate = 1; // çˆ¶fcbè¢«ä¿®æ”¹äº†
 
-    // ³õÊ¼»¯¸ÃÄ¿Â¼ fcb
+    // åˆå§‹åŒ–è¯¥ç›®å½• fcb
     fcb* fcbtmp = (fcb*)malloc(sizeof(fcb));
     fcbtmp->attribute = 0;
     set_create_time(&fcbtmp->date, &fcbtmp->time);
     strncpy(fcbtmp->filename, dirname, 8);
     fcbtmp->exname[0] = '\0';
-    fcbtmp->first = block_num; // Ö®Ç°ÉêÇëµ½µÄ´ÅÅÌ¿éºÅ
-    fcbtmp->length = 2 * sizeof(fcb); // . ºÍ .. Ä¿Â¼µÄ¿Õ¼ä
+    fcbtmp->first = block_num; // ä¹‹å‰ç”³è¯·åˆ°çš„ç£ç›˜å—å·
+    fcbtmp->length = 2 * sizeof(fcb); // . å’Œ .. ç›®å½•çš„ç©ºé—´
     fcbtmp->free = 1;
     do_write(currfd, (char*)fcbtmp, sizeof(fcb), 2);
 
-    // ÉèÖÃ´ò¿ªÎÄ¼ş±íÏî
-    int len; // ÔÚ×Ö·û´®½áÎ²Ôö¼Ó\0,±ÜÃâÒòÎªÈ±ÉÙ'\0'²úÉú´íÎó
+    // è®¾ç½®æ‰“å¼€æ–‡ä»¶è¡¨é¡¹
+    int len; // åœ¨å­—ç¬¦ä¸²ç»“å°¾å¢åŠ \0,é¿å…å› ä¸ºç¼ºå°‘'\0'äº§ç”Ÿé”™è¯¯
 
     openfilelist[fd].attribute = 0;
     openfilelist[fd].count = 0;
@@ -264,11 +264,11 @@ void my_mkdir(char* dirname)
 
     len = strlen(openfilelist[fd].dir);
     strncat(openfilelist[fd].dir, dirname, 8);
-    openfilelist[fd].dir[len + 8] = '\0'; // ±ÜÃâÒòÎªÈ±ÉÙ'\0'²úÉú´íÎó
+    openfilelist[fd].dir[len + 8] = '\0'; // é¿å…å› ä¸ºç¼ºå°‘'\0'äº§ç”Ÿé”™è¯¯
 
     strcat(openfilelist[fd].dir,"/");
 
-    // ÉèÖÃ . ºÍ .. Ä¿Â¼
+    // è®¾ç½® . å’Œ .. ç›®å½•
     fcbtmp->attribute = 0;
     fcbtmp->date = fcbtmp->date;
     fcbtmp->time = fcbtmp->time;
@@ -287,14 +287,14 @@ void my_mkdir(char* dirname)
     fcbtmp2->time = openfilelist[currfd].time;
     do_write(fd, (char*)fcbtmp2, sizeof(fcb), 2);
 
-    // ¹Ø±Õ¸ÃÄ¿Â¼µÄ´ò¿ªÎÄ¼ş±íÏî£¬close »áĞŞ¸Ä¸¸Ä¿Â¼ÖĞ¶ÔÓ¦¸ÃÄ¿Â¼µÄ fcb ĞÅÏ¢
-	// close()µ÷ÓÃÁËdo_write»á×Ô¶¯ĞŞ¸Ä´ò¿ªÎÄ¼ş±íÖĞ¸¸Ä¿Â¼µÄ³¤¶È£¬Ğè°ÑÎÄ¼ş´ò¿ª±íÖĞÄÚÈİĞ´»ØĞéÄâ´ÅÅÌ
+    // å…³é—­è¯¥ç›®å½•çš„æ‰“å¼€æ–‡ä»¶è¡¨é¡¹ï¼Œclose ä¼šä¿®æ”¹çˆ¶ç›®å½•ä¸­å¯¹åº”è¯¥ç›®å½•çš„ fcb ä¿¡æ¯
+	// close()è°ƒç”¨äº†do_writeä¼šè‡ªåŠ¨ä¿®æ”¹æ‰“å¼€æ–‡ä»¶è¡¨ä¸­çˆ¶ç›®å½•çš„é•¿åº¦ï¼Œéœ€æŠŠæ–‡ä»¶æ‰“å¼€è¡¨ä¸­å†…å®¹å†™å›è™šæ‹Ÿç£ç›˜
     my_close(fd);
 
     free(fcbtmp);
     free(fcbtmp2);
 
-    // ĞŞ¸Ä¸¸Ä¿Â¼ fcb
+    // ä¿®æ”¹çˆ¶ç›®å½• fcb
     fcbptr = (fcb*)text;
     fcbptr->length = openfilelist[currfd].length;
     openfilelist[currfd].count = 0;
@@ -308,7 +308,7 @@ void my_rmdir(char* dirname)
     int i, tag = 0;
     char* buf = (char*)malloc(BLOCKSIZE);
 
-    // ÅÅ³ı . ºÍ .. Ä¿Â¼
+    // æ’é™¤ . å’Œ .. ç›®å½•
     if (strcmp(dirname, ".") == 0 || strcmp(dirname, "..") == 0) {
         printf("can not remove . and .. special dir\n");
         return;
@@ -316,7 +316,7 @@ void my_rmdir(char* dirname)
     openfilelist[currfd].count = 0;
     do_read(currfd, openfilelist[currfd].length, buf);
 
-    // ²éÕÒÒªÉ¾³ıµÄÄ¿Â¼
+    // æŸ¥æ‰¾è¦åˆ é™¤çš„ç›®å½•
     fcb* fcbptr = (fcb*)buf;
     for (i = 0; i < (int)(openfilelist[currfd].length / sizeof(fcb)); i++, fcbptr++) {
         if (fcbptr->free == 0)
@@ -330,13 +330,13 @@ void my_rmdir(char* dirname)
         printf("no such dir\n");
         return;
     }
-    // ÎŞ·¨É¾³ı·Ç¿ÕÄ¿Â¼
+    // æ— æ³•åˆ é™¤éç©ºç›®å½•
     if (fcbptr->length > 2 * sizeof(fcb)) {
         printf("can not remove a non empty dir\n");
         return;
     }
 
-    // ¸üĞÂ fat ±í
+    // æ›´æ–° fat è¡¨
     int block_num = fcbptr->first;
     fat* fat1 = (fat*)(myvhard + BLOCKSIZE);
     int nxt_num = 0;
@@ -353,7 +353,7 @@ void my_rmdir(char* dirname)
     fat* fat2 = (fat*)(myvhard + BLOCKSIZE * 3);
     memcpy(fat2, fat1, BLOCKSIZE * 2);
 
-    // ¸üĞÂ fcb
+    // æ›´æ–° fcb
     fcbptr->date = 0;
     fcbptr->time = 0;
     fcbptr->exname[0] = '\0';
@@ -365,10 +365,10 @@ void my_rmdir(char* dirname)
     openfilelist[currfd].count = i * sizeof(fcb);
     do_write(currfd, (char*)fcbptr, sizeof(fcb), 2);
 
-    // É¾³ıÄ¿Â¼ĞèÒªÏàÓ¦¿¼ÂÇ¿ÉÄÜÉ¾³ı fcb£¬Ò²¾ÍÊÇĞŞ¸Ä¸¸Ä¿Â¼ length
-    // ÕâÀïĞèÒª×¢Òâ£ºÒòÎªÉ¾³ıÖĞ¼äµÄ fcb£¬Ä¿Â¼ÓĞĞ§³¤¶È²»±ä£¬¼´ length ²»±ä
-    // Òò´ËĞèÒª¿¼ÂÇÌØÊâÇé¿ö£¬¼´É¾³ı×îºóÒ»¸ö fcb Ê±£¬¼«ÓĞ¿ÉÄÜÖ®Ç°µÄ fcb ¶¼ÊÇ¿ÕµÄ£¬ÕâÊÇĞèÒª
-    // Ñ­»·É¾³ı fcb (ÒÔÏÂ´úÂëÍê³É)£¬¿ÉÄÜĞèÒª»ØÊÕ block ĞŞ¸Ä fat ±íµÈ¹ı³Ì(do_write Íê³É)
+    // åˆ é™¤ç›®å½•éœ€è¦ç›¸åº”è€ƒè™‘å¯èƒ½åˆ é™¤ fcbï¼Œä¹Ÿå°±æ˜¯ä¿®æ”¹çˆ¶ç›®å½• length
+    // è¿™é‡Œéœ€è¦æ³¨æ„ï¼šå› ä¸ºåˆ é™¤ä¸­é—´çš„ fcbï¼Œç›®å½•æœ‰æ•ˆé•¿åº¦ä¸å˜ï¼Œå³ length ä¸å˜
+    // å› æ­¤éœ€è¦è€ƒè™‘ç‰¹æ®Šæƒ…å†µï¼Œå³åˆ é™¤æœ€åä¸€ä¸ª fcb æ—¶ï¼Œææœ‰å¯èƒ½ä¹‹å‰çš„ fcb éƒ½æ˜¯ç©ºçš„ï¼Œè¿™æ˜¯éœ€è¦
+    // å¾ªç¯åˆ é™¤ fcb (ä»¥ä¸‹ä»£ç å®Œæˆ)ï¼Œå¯èƒ½éœ€è¦å›æ”¶ block ä¿®æ”¹ fat è¡¨ç­‰è¿‡ç¨‹(do_write å®Œæˆ)
     int lognum = i;
     if ((lognum + 1) * sizeof(fcb) == openfilelist[currfd].length) {
         openfilelist[currfd].length -= sizeof(fcb);
@@ -380,7 +380,7 @@ void my_rmdir(char* dirname)
         }
     }
 
-    // ¸üĞÂ¸¸Ä¿Â¼ fcb
+    // æ›´æ–°çˆ¶ç›®å½• fcb
     fcbptr = (fcb*)buf;
     fcbptr->length = openfilelist[currfd].length;
     openfilelist[currfd].count = 0;
@@ -392,7 +392,7 @@ void my_rmdir(char* dirname)
 
 int my_create(char* fullname)
 {
-    // ·Ç·¨ÅĞ¶Ï
+    // éæ³•åˆ¤æ–­
     if (strcmp(fullname, "") == 0 || fullname[0] == '.') {
         printf("please input filename\n");
         return -1;
@@ -418,7 +418,7 @@ int my_create(char* fullname)
 
     int i;
     fcb* fcbptr = (fcb*)buf;
-    // ¼ì²éÖØÃû
+    // æ£€æŸ¥é‡å
     for (i = 0; i < (int)(openfilelist[currfd].length / sizeof(fcb)); i++, fcbptr++) {
         if (fcbptr->free == 0) {
             continue;
@@ -429,13 +429,13 @@ int my_create(char* fullname)
         }
     }
 
-    // ÉêÇë¿Õ fcb;
+    // ç”³è¯·ç©º fcb;
     fcbptr = (fcb*)buf;
     for (i = 0; i < (int)(openfilelist[currfd].length / sizeof(fcb)); i++, fcbptr++) {
         if (fcbptr->free == 0)
             break;
     }
-    // ÉêÇë´ÅÅÌ¿é²¢¸üĞÂ fat ±í
+    // ç”³è¯·ç£ç›˜å—å¹¶æ›´æ–° fat è¡¨
     int block_num = get_free_block();
     if (block_num == -1) {
         return -1;
@@ -445,7 +445,7 @@ int my_create(char* fullname)
     fat1[block_num].id = END;
     memcpy(fat2, fat1, BLOCKSIZE * 2);
 
-    // ĞŞ¸Ä fcb ĞÅÏ¢
+    // ä¿®æ”¹ fcb ä¿¡æ¯
     strcpy(fcbptr->filename, filename);
     strcpy(fcbptr->exname, exname);
     set_create_time(&fcbptr->date, &fcbptr->time);
@@ -457,7 +457,7 @@ int my_create(char* fullname)
     openfilelist[currfd].count = i * sizeof(fcb);
     do_write(currfd, (char*)fcbptr, sizeof(fcb), 2);
 
-    // ĞŞ¸Ä¸¸Ä¿Â¼ fcb
+    // ä¿®æ”¹çˆ¶ç›®å½• fcb
     fcbptr = (fcb*)buf;
     fcbptr->length = openfilelist[currfd].length;
     openfilelist[currfd].count = 0;
@@ -470,7 +470,7 @@ int my_create(char* fullname)
 
 void my_rm(char* fullname)
 {
-    // ·Ç·¨ÅĞ¶Ï
+    // éæ³•åˆ¤æ–­
     if (strcmp(fullname, "") == 0 || fullname[0] == '.') {
         printf("please input filename\n");
         return;
@@ -496,7 +496,7 @@ void my_rm(char* fullname)
         strncpy(exname, sp, 3);
     }
 
-    // ²éÑ¯
+    // æŸ¥è¯¢
     for (i = 0; i < (int)(openfilelist[currfd].length / sizeof(fcb)); i++, fcbptr++) {
         if (strncmp(fcbptr->filename, filename, 8) == 0 && strncmp(fcbptr->exname, exname, 3) == 0 && fcbptr->attribute == 1) {
             flag = 1;
@@ -508,7 +508,7 @@ void my_rm(char* fullname)
         return;
     }
 
-    // ¸üĞÂ fat ±í
+    // æ›´æ–° fat è¡¨
     int block_num = fcbptr->first;
     fat* fat1 = (fat*)(myvhard + BLOCKSIZE);
     int nxt_num = 0;
@@ -524,7 +524,7 @@ void my_rm(char* fullname)
     fat* fat2 = (fat*)(myvhard + BLOCKSIZE * 3);
     memcpy(fat2, fat1, BLOCKSIZE * 2);
 
-    // Çå¿Õ fcb
+    // æ¸…ç©º fcb
     fcbptr->date = 0;
     fcbptr->time = 0;
     fcbptr->exname[0] = '\0';
@@ -546,7 +546,7 @@ void my_rm(char* fullname)
         }
     }
 
-    // ĞŞ¸Ä¸¸Ä¿Â¼ . Ä¿Â¼ÎÄ¼şµÄ fcb
+    // ä¿®æ”¹çˆ¶ç›®å½• . ç›®å½•æ–‡ä»¶çš„ fcb
     fcbptr = (fcb*)buf;
     fcbptr->length = openfilelist[currfd].length;
     openfilelist[currfd].count = 0;
@@ -559,7 +559,7 @@ void my_rm(char* fullname)
 
 int my_open(char* fullname)
 {
-    // ·Ç·¨ÅĞ¶Ï
+    // éæ³•åˆ¤æ–­
     if (strcmp(fullname, "") == 0 || fullname[0] == '.') {
         printf("please input filename\n");
         return -1;
@@ -583,7 +583,7 @@ int my_open(char* fullname)
 
     int i, flag = 0;
     fcb* fcbptr = (fcb*)buf;
-    // ÖØÃû¼ì²é
+    // é‡åæ£€æŸ¥
     for (i = 0; i < (int)(openfilelist[currfd].length / sizeof(fcb)); i++, fcbptr++) {
         if (strncmp(fcbptr->filename, filename, 8) == 0 && strncmp(fcbptr->exname, exname, 3) == 0 && fcbptr->attribute == 1) {
             flag = 1;
@@ -595,13 +595,13 @@ int my_open(char* fullname)
         return -1;
     }
 
-    // ÉêÇëĞÂµÄ´ò¿ªÄ¿Â¼Ïî²¢³õÊ¼»¯¸ÃÄ¿Â¼Ïî
+    // ç”³è¯·æ–°çš„æ‰“å¼€ç›®å½•é¡¹å¹¶åˆå§‹åŒ–è¯¥ç›®å½•é¡¹
     int fd = get_free_openfilelist();
     if (fd == -1) {
         printf("my_open: full openfilelist\n");
         return -1;
     }
-    int len; // ±ÜÃâÒòÎªÈ±ÉÙ'\0'²úÉú´íÎó
+    int len; // é¿å…å› ä¸ºç¼ºå°‘'\0'äº§ç”Ÿé”™è¯¯
     openfilelist[fd].attribute = 1;
     openfilelist[fd].count = 0;
     openfilelist[fd].date = fcbptr->date;
@@ -618,13 +618,13 @@ int my_open(char* fullname)
 
     len = strlen(openfilelist[fd].dir);
     strncat(openfilelist[fd].dir, filename, 8);
-    openfilelist[fd].dir[len + 8] = '\0'; // ±ÜÃâÒòÎªÈ±ÉÙ'\0'²úÉú´íÎó
+    openfilelist[fd].dir[len + 8] = '\0'; // é¿å…å› ä¸ºç¼ºå°‘'\0'äº§ç”Ÿé”™è¯¯
     
     strcat(openfilelist[fd].dir, ".");
 
     len = strlen(openfilelist[fd].dir);
     strncat(openfilelist[fd].dir, exname, 3);
-    openfilelist[fd].dir[len + 3] = '\0'; // ±ÜÃâÒòÎªÈ±ÉÙ'\0'²úÉú´íÎó
+    openfilelist[fd].dir[len + 3] = '\0'; // é¿å…å› ä¸ºç¼ºå°‘'\0'äº§ç”Ÿé”™è¯¯
 
     openfilelist[fd].dirno = openfilelist[currfd].first;
     openfilelist[fd].diroff = i;
@@ -652,7 +652,7 @@ void my_cd(char* dirname)
     do_read(currfd, openfilelist[currfd].length, buf);
 
     fcb* fcbptr = (fcb*)buf;
-    // ²éÕÒÄ¿±ê fcb
+    // æŸ¥æ‰¾ç›®æ ‡ fcb
     for (i = 0; i < (int)(openfilelist[currfd].length / sizeof(fcb)); i++, fcbptr++) {
         if (strncmp(fcbptr->filename, dirname, 8) == 0 && fcbptr->attribute == 0) {
             tag = 1;
@@ -663,7 +663,7 @@ void my_cd(char* dirname)
         printf("my_cd: no such dir\n");
         return;
     } else {
-        // . ºÍ .. ¼ì²é
+        // . å’Œ .. æ£€æŸ¥
         if (strcmp(fcbptr->filename, ".") == 0) {
             return;
         } else if (strcmp(fcbptr->filename, "..") == 0) {
@@ -675,12 +675,12 @@ void my_cd(char* dirname)
                 return;
             }
         } else {
-            // ÆäËûÄ¿Â¼
+            // å…¶ä»–ç›®å½•
             fd = get_free_openfilelist();
             if (fd == -1) {
                 return;
             }
-            int len; // ±ÜÃâÒòÎªÈ±ÉÙ'\0'²úÉú´íÎó
+            int len; // é¿å…å› ä¸ºç¼ºå°‘'\0'äº§ç”Ÿé”™è¯¯
 
             openfilelist[fd].attribute = fcbptr->attribute;
             openfilelist[fd].count = 0;
@@ -702,7 +702,7 @@ void my_cd(char* dirname)
 
             len = strlen(openfilelist[fd].dir);
             strncat(openfilelist[fd].dir, dirname, 8);
-            openfilelist[fd].dir[len + 8] = '\0'; // ±ÜÃâÒòÎªÈ±ÉÙ'\0'²úÉú´íÎó
+            openfilelist[fd].dir[len + 8] = '\0'; // é¿å…å› ä¸ºç¼ºå°‘'\0'äº§ç”Ÿé”™è¯¯
 
             strcat(openfilelist[fd].dir,"/");
 
@@ -751,12 +751,12 @@ int my_close(int fd)
         fcbptr->date = openfilelist[fd].date;
         fcbptr->attribute = openfilelist[fd].attribute;
 
-		//ĞŞ¸Ä¸¸Ä¿Â¼µÄĞÅÏ¢
+		//ä¿®æ”¹çˆ¶ç›®å½•çš„ä¿¡æ¯
         openfilelist[father_fd].count = openfilelist[fd].diroff * sizeof(fcb);
 
         do_write(father_fd, (char*)fcbptr, sizeof(fcb), 2); 
     }
-    // ÊÍ·Å´ò¿ªÎÄ¼ş±í
+    // é‡Šæ”¾æ‰“å¼€æ–‡ä»¶è¡¨
     memset(&openfilelist[fd], 0, sizeof(useropen));
     currfd = father_fd;
     free(buf);
@@ -788,9 +788,9 @@ int my_write(int fd)
     }
     int wstyle;
     while (1) {
-        // 1: ½Ø¶ÏĞ´£¬Çå¿ÕÈ«²¿ÄÚÈİ£¬´ÓÍ·¿ªÊ¼Ğ´
-        // 2. ¸²¸ÇĞ´£¬´ÓÎÄ¼şÖ¸Õë´¦¿ªÊ¼Ğ´
-        // 3. ×·¼ÓĞ´£¬×ÖÃæÒâË¼
+        // 1: æˆªæ–­å†™ï¼Œæ¸…ç©ºå…¨éƒ¨å†…å®¹ï¼Œä»å¤´å¼€å§‹å†™
+        // 2. è¦†ç›–å†™ï¼Œä»æ–‡ä»¶æŒ‡é’ˆå¤„å¼€å§‹å†™
+        // 3. è¿½åŠ å†™ï¼Œå­—é¢æ„æ€
         printf("1:Truncation  2:Coverage  3:Addition\n");
         scanf("%d", &wstyle);
         getchar(); // sb
@@ -812,7 +812,7 @@ int my_write(int fd)
         strcat(text, texttmp);
     }
     
-    text[strlen(text)-1] = '\0'; //×îºóÒ»ĞĞ»Ø³µ¶ªµô
+    text[strlen(text)-1] = '\0'; //æœ€åä¸€è¡Œå›è½¦ä¸¢æ‰
 	// printf("text : \n%s\n",text);
     do_write(fd, text, strlen(text), wstyle); //
     openfilelist[fd].fcbstate = 1;
@@ -836,7 +836,7 @@ int do_read(int fd, int len, char* text)
     int block_num = openfilelist[fd].first;
     fat* fatptr = (fat*)(myvhard + BLOCKSIZE) + block_num;
 
-    // ¶¨Î»¶ÁÈ¡Ä¿±ê´ÅÅÌ¿éºÍ¿éÄÚµØÖ·
+    // å®šä½è¯»å–ç›®æ ‡ç£ç›˜å—å’Œå—å†…åœ°å€
     while (off >= BLOCKSIZE) {
         off -= BLOCKSIZE;
         block_num = fatptr->id;
@@ -850,7 +850,7 @@ int do_read(int fd, int len, char* text)
     unsigned char* blockptr = myvhard + BLOCKSIZE * block_num;
     memcpy(buf, blockptr, BLOCKSIZE);
 
-    // ¶ÁÈ¡ÄÚÈİ
+    // è¯»å–å†…å®¹
     while (len > 0) {
         if (BLOCKSIZE - off > len) {
             memcpy(textptr, buf + off, len);
@@ -895,11 +895,11 @@ int do_write(int fd, char* text, int len, char wstyle)
         openfilelist[fd].count = 0;
         openfilelist[fd].length = 0;
     } else if (wstyle == 3) {
-        // ×·¼ÓĞ´£¬Èç¹ûÊÇÒ»°ãÎÄ¼ş£¬ÔòĞèÒªÏÈÉ¾³ıÄ©Î² \0£¬¼´½«Ö¸ÕëÒÆµ½Ä©Î»¼õÒ»¸ö×Ö½Ú´¦
+        // è¿½åŠ å†™ï¼Œå¦‚æœæ˜¯ä¸€èˆ¬æ–‡ä»¶ï¼Œåˆ™éœ€è¦å…ˆåˆ é™¤æœ«å°¾ \0ï¼Œå³å°†æŒ‡é’ˆç§»åˆ°æœ«ä½å‡ä¸€ä¸ªå­—èŠ‚å¤„
         openfilelist[fd].count = openfilelist[fd].length;
         if (openfilelist[fd].attribute == 1) {
             if (openfilelist[fd].length != 0) {
-                // ·Ç¿ÕÎÄ¼ş
+                // éç©ºæ–‡ä»¶
                 openfilelist[fd].count = openfilelist[fd].length;
             }
         }
@@ -907,7 +907,7 @@ int do_write(int fd, char* text, int len, char wstyle)
 
     int off = openfilelist[fd].count;
 
-    // ¶¨Î»´ÅÅÌ¿éºÍ¿éÄÚÆ«ÒÆÁ¿
+    // å®šä½ç£ç›˜å—å’Œå—å†…åç§»é‡
     while (off >= BLOCKSIZE) {
         block_num = fatptr->id;
         if (block_num == END) {
@@ -919,7 +919,7 @@ int do_write(int fd, char* text, int len, char wstyle)
     }
 
     blockptr = (unsigned char*)(myvhard + BLOCKSIZE * block_num);
-    // Ğ´Èë´ÅÅÌ
+    // å†™å…¥ç£ç›˜
     while (len > lentmp) {
         memcpy(buf, blockptr, BLOCKSIZE);
         for (; off < BLOCKSIZE; off++) {
@@ -931,7 +931,7 @@ int do_write(int fd, char* text, int len, char wstyle)
         }
         memcpy(blockptr, buf, BLOCKSIZE);
         free(buf);
-        // Ğ´ÈëµÄÄÚÈİÌ«¶à£¬ĞèÒªĞ´µ½ÏÂÒ»¸ö´ÅÅÌ¿é£¬Èç¹ûÃ»ÓĞ´ÅÅÌ¿é£¬¾ÍÉêÇëÒ»¸ö
+        // å†™å…¥çš„å†…å®¹å¤ªå¤šï¼Œéœ€è¦å†™åˆ°ä¸‹ä¸€ä¸ªç£ç›˜å—ï¼Œå¦‚æœæ²¡æœ‰ç£ç›˜å—ï¼Œå°±ç”³è¯·ä¸€ä¸ª
         if (off == BLOCKSIZE && len != lentmp) {
             off = 0;
             block_num = fatptr->id;
@@ -956,7 +956,7 @@ int do_write(int fd, char* text, int len, char wstyle)
     if (openfilelist[fd].count > openfilelist[fd].length)
         openfilelist[fd].length = openfilelist[fd].count;
 
-    // É¾³ı¶àÓàµÄ´ÅÅÌ¿é
+    // åˆ é™¤å¤šä½™çš„ç£ç›˜å—
     if (wstyle == 1 || (wstyle == 2 && openfilelist[fd].attribute == 0)) {
         off = openfilelist[fd].length;
         fatptr = (fat *)(myvhard + BLOCKSIZE) + openfilelist[fd].first;
@@ -1027,23 +1027,23 @@ void get_name(char* name, int size, char *rawname)
 
 void help()
 {
-    printf("cd\t\tÄ¿Â¼Ãû(Â·¾¶Ãû)\t\tÇĞ»»µ±Ç°Ä¿Â¼µ½Ö¸¶¨Ä¿Â¼\n");
-    printf("mkdir\t\tÄ¿Â¼Ãû\t\t\tÔÚµ±Ç°Ä¿Â¼´´½¨ĞÂÄ¿Â¼\n");
-    printf("rmdir\t\tÄ¿Â¼Ãû\t\t\tÔÚµ±Ç°Ä¿Â¼É¾³ıÖ¸¶¨Ä¿Â¼\n");
-    printf("ls\t\tÎŞ\t\t\tÏÔÊ¾µ±Ç°Ä¿Â¼ÏÂµÄÄ¿Â¼ºÍÎÄ¼ş\n");
-    printf("create\t\tÎÄ¼şÃû\t\t\tÔÚµ±Ç°Ä¿Â¼ÏÂ´´½¨Ö¸¶¨ÎÄ¼ş\n");
-    printf("rm\t\tÎÄ¼şÃû\t\t\tÔÚµ±Ç°Ä¿Â¼ÏÂÉ¾³ıÖ¸¶¨ÎÄ¼ş\n");
-    printf("open\t\tÎÄ¼şÃû\t\t\tÔÚµ±Ç°Ä¿Â¼ÏÂ´ò¿ªÖ¸¶¨ÎÄ¼ş\n");
-    printf("write\t\tÎŞ\t\t\tÔÚ´ò¿ªÎÄ¼ş×´Ì¬ÏÂ£¬Ğ´¸ÃÎÄ¼ş\n");
-    printf("read\t\tÎŞ\t\t\tÔÚ´ò¿ªÎÄ¼ş×´Ì¬ÏÂ£¬¶ÁÈ¡¸ÃÎÄ¼ş\n");
-    printf("close\t\tÎŞ\t\t\tÔÚ´ò¿ªÎÄ¼ş×´Ì¬ÏÂ£¬¶ÁÈ¡¸ÃÎÄ¼ş\n");
-    printf("search\t\tÎÄ¼şÃû\t\t\t·µ»ØÎÄ¼şËùÔÚÂ·¾¶\n");
-    printf("help\t\tÎŞ\t\t\t²é¿´ËùÓĞÖ¸Áî\n");
-    printf("exit\t\tÎŞ\t\t\tÍË³öÏµÍ³£¬²¢±£´æĞÅÏ¢\n\n");
+    printf("cd\t\tç›®å½•å(è·¯å¾„å)\t\tåˆ‡æ¢å½“å‰ç›®å½•åˆ°æŒ‡å®šç›®å½•\n");
+    printf("mkdir\t\tç›®å½•å\t\t\tåœ¨å½“å‰ç›®å½•åˆ›å»ºæ–°ç›®å½•\n");
+    printf("rmdir\t\tç›®å½•å\t\t\tåœ¨å½“å‰ç›®å½•åˆ é™¤æŒ‡å®šç›®å½•\n");
+    printf("ls\t\tæ— \t\t\tæ˜¾ç¤ºå½“å‰ç›®å½•ä¸‹çš„ç›®å½•å’Œæ–‡ä»¶\n");
+    printf("create\t\tæ–‡ä»¶å\t\t\tåœ¨å½“å‰ç›®å½•ä¸‹åˆ›å»ºæŒ‡å®šæ–‡ä»¶\n");
+    printf("rm\t\tæ–‡ä»¶å\t\t\tåœ¨å½“å‰ç›®å½•ä¸‹åˆ é™¤æŒ‡å®šæ–‡ä»¶\n");
+    printf("open\t\tæ–‡ä»¶å\t\t\tåœ¨å½“å‰ç›®å½•ä¸‹æ‰“å¼€æŒ‡å®šæ–‡ä»¶\n");
+    printf("write\t\tæ— \t\t\tåœ¨æ‰“å¼€æ–‡ä»¶çŠ¶æ€ä¸‹ï¼Œå†™è¯¥æ–‡ä»¶\n");
+    printf("read\t\tæ— \t\t\tåœ¨æ‰“å¼€æ–‡ä»¶çŠ¶æ€ä¸‹ï¼Œè¯»å–è¯¥æ–‡ä»¶\n");
+    printf("close\t\tæ— \t\t\tåœ¨æ‰“å¼€æ–‡ä»¶çŠ¶æ€ä¸‹ï¼Œè¯»å–è¯¥æ–‡ä»¶\n");
+    printf("search\t\tæ–‡ä»¶å\t\t\tè¿”å›æ–‡ä»¶æ‰€åœ¨è·¯å¾„\n");
+    printf("help\t\tæ— \t\t\tæŸ¥çœ‹æ‰€æœ‰æŒ‡ä»¤\n");
+    printf("exit\t\tæ— \t\t\té€€å‡ºç³»ç»Ÿï¼Œå¹¶ä¿å­˜ä¿¡æ¯\n\n");
     printf("*********************************************************************\n\n");
 }
 
-void my_search(char* fullname) // ËÑË÷
+void my_search(char* fullname) // æœç´¢
 {
 	char fullnamecopy1[20];
 	char fullnamecopy2[20];
@@ -1067,7 +1067,7 @@ void my_search(char* fullname) // ËÑË÷
 
     int i;
     fcb* fcbptr = (fcb*)buf;
-    // ¼ì²éÖØÃû
+    // æ£€æŸ¥é‡å
     for (i = 0; i < (int)(openfilelist[currfd].length / sizeof(fcb)); i++, fcbptr++) {
         if (fcbptr->free == 0) {
             continue;
