@@ -1,10 +1,5 @@
 #include "init.h"
 
-extern unsigned char* myvhard;
-extern useropen openfilelist[MAXOPENFILE];
-extern int currfd;
-extern unsigned char* startp;
-
 int main(void)
 {
     char cmd[13][10] = {
